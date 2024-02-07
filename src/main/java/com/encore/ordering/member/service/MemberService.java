@@ -5,6 +5,9 @@ import com.encore.ordering.member.dto.LoginRequest;
 import com.encore.ordering.member.dto.MemberResponse;
 import com.encore.ordering.member.dto.MemberSaveRequest;
 import com.encore.ordering.member.repository.MemberRepository;
+import com.encore.ordering.order.domain.Ordering;
+import com.encore.ordering.order.dto.OrderResDto;
+import com.encore.ordering.order.repository.OrderingRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,10 +23,12 @@ import java.util.stream.Collectors;
 public class MemberService {
 
     private final MemberRepository repository;
+    private final OrderingRepository orderingRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public MemberService(MemberRepository repository, PasswordEncoder passwordEncoder) {
+    public MemberService(MemberRepository repository, OrderingRepository orderingRepository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.orderingRepository = orderingRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -60,5 +65,20 @@ public class MemberService {
         List<Member> members= repository.findAll();
                 return members.stream().map(m->MemberResponse.toMemberResponse(m)).collect(Collectors.toList());
 
+    }
+
+    //memberOrders
+    public List<OrderResDto> memberOrders(Long id){
+        Member member = repository.findById(id).orElseThrow(()->new EntityNotFoundException("찾는 회원이 없습니다."));
+        List<Ordering> orderings = orderingRepository.findAllByMember(member);
+        return orderings.stream().map(OrderResDto::toDto).collect(Collectors.toList());
+    }
+
+    public List<OrderResDto> finMyOrders() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Member member = repository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("찾는 회원이 없습니다."));
+        List<Ordering> orderings = orderingRepository.findAllByMember(member);
+        return orderings.stream().map(OrderResDto::toDto).collect(Collectors.toList());
     }
 }

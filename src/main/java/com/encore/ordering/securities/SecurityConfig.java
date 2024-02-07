@@ -38,7 +38,7 @@ public class SecurityConfig {
 //                .httpBasic().disable()
                 .authorizeRequests()
                 //** 뒤에 모든 경로, * 자식 경로
-                .antMatchers("/member/new","/doLogin","/items","/item/image/**")
+                .antMatchers("/member/new","/doLogin","/items/*","/item/*/image")
                     .permitAll()
                 .anyRequest().authenticated()
                 .and()

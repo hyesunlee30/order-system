@@ -5,14 +5,22 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Date;
 
+@Slf4j
 @Component
 public class JwtTokenProvider {
 
+    @Value("${jwt.secretKey}")
+    private String secretKey;
+
+    @Value("${jwt.expiration}")
+    private int expiration;
 
     //사용자 이메일과 롤
     public String createdToken(String email, String role){
@@ -21,6 +29,9 @@ public class JwtTokenProvider {
         Claims claims = Jwts.claims().setSubject(email);
         claims.put("role", role);
         Date now = new Date();
+
+        log.debug("expiration {}",expiration);
+        log.debug("role {}",role);
 
 //        JwtBuilder jwtBuilder = Jwts.builder();
 //        jwtBuilder.setClaims(claims);
@@ -33,8 +44,9 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + 30*60*1000L))//30분
-                .signWith(SignatureAlgorithm.HS256, "mysecret")
+                //.setExpiration(new Date(now.getTime() + 30*60*1000L))//30분
+                .setExpiration(new Date(now.getTime() + expiration*60*1000L))//30분
+                .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
 }

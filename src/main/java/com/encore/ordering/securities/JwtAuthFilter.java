@@ -4,6 +4,7 @@ import com.encore.ordering.common.ErrorResponseDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,6 +27,9 @@ import java.util.List;
 @Component
 public class JwtAuthFilter extends GenericFilter {
 
+    @Value("${jwt.secretKey}")
+    private String secretKey;
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         try {
@@ -37,11 +41,13 @@ public class JwtAuthFilter extends GenericFilter {
                 }
                 String token= bearerToken.substring(7);
 
+
+
                 //추출된 토큰을 검증 후 Authentication객체 생성
                 //token과 body를 꺼내는 과정에서 암호과 같은지 확인, 다르면 에러가 나서 try catch로 잡음
                 //body는 Claims
                 //토큰 검증 및 claims 추출
-                Claims claims = Jwts.parser().setSigningKey("mysecret").parseClaimsJws(token).getBody();
+                Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
                 //Authentication 객체를 생성하기 위한 UserDetails 생성
                 List<GrantedAuthority> authorities= new ArrayList<>();
                 //도메인 단위 분류가 여러개

@@ -1,19 +1,17 @@
 package com.encore.ordering.member.controller;
 
-import com.encore.ordering.common.ResponseDTO;
+import com.encore.ordering.common.CommonResponse;
 import com.encore.ordering.member.domain.Member;
-import com.encore.ordering.member.domain.Role;
 import com.encore.ordering.member.dto.LoginRequest;
 import com.encore.ordering.member.dto.MemberResponse;
 import com.encore.ordering.member.dto.MemberSaveRequest;
 import com.encore.ordering.member.service.MemberService;
+import com.encore.ordering.order.dto.OrderResDto;
 import com.encore.ordering.securities.JwtTokenProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.HashMap;
@@ -31,17 +29,18 @@ public class MemberController {
     }
 
     @PostMapping("/member/new")
-    public ResponseEntity<ResponseDTO> save(@Valid @RequestBody MemberSaveRequest request) {
+    public ResponseEntity<CommonResponse> save(@Valid @RequestBody MemberSaveRequest request) {
         System.out.println(request.getEmail());
         Member member =service.save(request);
         return new ResponseEntity<>(
-                new ResponseDTO(HttpStatus.CREATED,"member successfully created.",member.getId()),
+                new CommonResponse(HttpStatus.CREATED,"member successfully created.",member.getId()),
                 HttpStatus.CREATED
         );
     }
 
+
     @PostMapping("/doLogin")
-    public ResponseEntity<ResponseDTO> signIn(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<CommonResponse> signIn(@Valid @RequestBody LoginRequest request) {
         Member member =service.login(request);
         //json web token
         //토큰 생성 로직
@@ -51,11 +50,12 @@ public class MemberController {
         memberInfo.put("id", member.getId());
         memberInfo.put("token", jwt);
         return new ResponseEntity<>(
-                new ResponseDTO(HttpStatus.OK,"member successfully logind.",memberInfo),
+                new CommonResponse(HttpStatus.OK,"member successfully logind.",memberInfo),
                 HttpStatus.OK
         );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/members")
     public List<MemberResponse> members() {
         return service.findAll();
@@ -66,8 +66,22 @@ public class MemberController {
         return service.findMyInfo();
     }
 
-    //@GetMapping("/member/{id}/orders")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/member/{id}/orders")
+    public ResponseEntity<CommonResponse> orders(@PathVariable Long id) {
 
-    //@GetMapping("/member/myorders")
+        List<OrderResDto> orderResDtos = service.memberOrders(id);
+        return new ResponseEntity<>(
+                new CommonResponse(HttpStatus.OK,"order successfully cancel", orderResDtos)
+                , HttpStatus.OK);
+    }
+
+    @GetMapping("/member/myorders")
+    public ResponseEntity<CommonResponse> findByOrders() {
+        List<OrderResDto> orderResDtos = service.finMyOrders();
+        return new ResponseEntity<>(
+                new CommonResponse(HttpStatus.OK,"order successfully cancel", orderResDtos)
+                , HttpStatus.OK);
+    }
 
 }
