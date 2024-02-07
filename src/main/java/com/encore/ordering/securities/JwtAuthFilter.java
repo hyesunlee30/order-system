@@ -34,14 +34,13 @@ public class JwtAuthFilter extends GenericFilter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         try {
             String bearerToken = ((HttpServletRequest)request).getHeader("Authorization");
+
             if(bearerToken != null) {
             //bearer token에서 token값만 추출
                 if(!bearerToken.startsWith("Bearer ")) {
                     throw new AuthenticationServiceException("token의 형식에 맞지 않습니다.");
                 }
                 String token= bearerToken.substring(7);
-
-
 
                 //추출된 토큰을 검증 후 Authentication객체 생성
                 //token과 body를 꺼내는 과정에서 암호과 같은지 확인, 다르면 에러가 나서 try catch로 잡음
@@ -59,13 +58,12 @@ public class JwtAuthFilter extends GenericFilter {
                         userDetails.getAuthorities());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
-
             }
+
             // 다시 filter 체인 타라.
             chain.doFilter(request, response);
 
-        } catch (AuthenticationServiceException e) {
+        } catch (Exception e) {
             HttpServletResponse httpServletResponse = (HttpServletResponse) response;
             httpServletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
             httpServletResponse.setContentType("application/json");

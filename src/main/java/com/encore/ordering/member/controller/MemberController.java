@@ -28,10 +28,9 @@ public class MemberController {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    @PostMapping("/member/new")
+    @PostMapping("/member/create")
     public ResponseEntity<CommonResponse> save(@Valid @RequestBody MemberSaveRequest request) {
-        System.out.println(request.getEmail());
-        Member member =service.save(request);
+        Member member = service.save(request);
         return new ResponseEntity<>(
                 new CommonResponse(HttpStatus.CREATED,"member successfully created.",member.getId()),
                 HttpStatus.CREATED

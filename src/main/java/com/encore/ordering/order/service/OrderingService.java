@@ -47,7 +47,8 @@ public class OrderingService {
         Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("not found email"));
 
         Ordering ordering = Ordering.builder()
-                .member(member).build();
+                .member(member)
+                .build();
 
         List<OrderReqDto.OrderItemDto> orderItemDtos = orderReqDto.getOrderItemDtos();
         log.debug(orderItemDtos.toString());

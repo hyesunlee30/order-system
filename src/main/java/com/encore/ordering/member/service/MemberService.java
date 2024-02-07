@@ -34,10 +34,9 @@ public class MemberService {
 
     public Member save(MemberSaveRequest request) throws IllegalArgumentException{
         if (repository.findByEmail(request.getEmail()).isPresent()){
-            throw new IllegalArgumentException("이미 가입되어 있는 이메일입니다.");
+            throw new IllegalArgumentException("이미 가입 되어 있는 이메일입니다.");
         }
         request.setPassword(passwordEncoder.encode(request.getPassword()));
-
 
         return repository.save(Member.toEntity(request));
     }

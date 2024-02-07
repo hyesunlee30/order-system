@@ -43,6 +43,7 @@ public class OrderResDto {
                 .email(ordering.getMember().getEmail())
                 .orderStatus(ordering.getOrderStatus().toString())
                 .orderItems(orderResItemDtos)
+                .createdTime(ordering.getCreatedTime())
                 .build();
     }
 }
